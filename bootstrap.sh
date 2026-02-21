@@ -1,21 +1,20 @@
 #!/usr/bin/env bash
 #
-# SPDX-FileCopyrightText: ©2021-2025 franklin <franklin@bitsmasher.net>
+# SPDX-FileCopyrightText: 2026 franklin
 #
 # SPDX-License-Identifier: MIT
 
 # ChangeLog:
 #
-# v0.1
+# v0.1 Feb 20, 2026
 
 #set -euo pipefail
 
 # The special shell variable IFS determines how Bash
 # recognizes word boundaries while splitting a sequence of character strings.
-IFS=$'\n\t'
+# IFS=$'\n\t'
 
-#PREFIX="/mnt/storage1/workspace/build"
-PREFIX="/home/franklin/workspace/build"
+PREFIX="/home/franklin/workspace/gaming"
 
 function build_sdl2() {
   sudo apt install -y libxmp-dev
@@ -27,20 +26,32 @@ function build_sdl2() {
     tar xvf /mnt/storage1/workspace/build/SDL2_mixer-2.8.1.tar
   fi
   cd  /mnt/storage1/workspace/build/SDL2_mixer-2.8.1 && 
-  exit 1
+}
+
+function install_debian() {
+  sudo apt install -y gettext libsqlite3-dev libcurl4-openssl-dev libsdl2-dev \
+    libmagickwand-dev libgtk-3-dev libxmp-dev qt6-tools-dev liblua5.4-dev \
+    libsdl2-mixer-dev
+  build_sdl2
+}
+
+function install_openbsd() {
+  pass 
 }
 
 function main() {
   # change to working dir
   pushd "${PREFIX}/freeciv-3.1.3" 2>&1 || exit 1
 
-  CONFIG_ARGS="--enable-client=auto --with-missinglist --enable-aimodules=experimental --enable-shared --enable-mapimg=auto"
+  CONFIG_ARGS="--with-mysql-prefix=/usr/local --enable-client=auto --with-missinglist --enable-aimodules=experimental --enable-shared --enable-mapimg=auto"
   # "${PREFIX}/freeciv-3.1.3/autogen.sh ${CONFIG_ARGS}"
-  sudo apt install -y gettext libsqlite3-dev libcurl4-openssl-dev libsdl2-dev \
-    libmagickwand-dev libgtk-3-dev libxmp-dev qt6-tools-dev liblua5.4-dev \
-    libsdl2-mixer-dev
-  #build_sdl2
-  cd "${PREFIX}/freeciv-3.1.3" && ./configure --enable-client=auto --with-missinglist --enable-aimodules=experimental --enable-shared --enable-mapimg=auto
+  if [ "$(uname -s)" == "OpenBSD" ]; then
+    install_openbsd
+  else
+    install_debian
+  fi
+  
+  cd "${PREFIX}/freeciv-3.1.3" && ./configure "${CONFIG_ARGS}"
 }
 
 main "$@"
